@@ -14,7 +14,7 @@ abstract class ClientPlayerInteractionManagerMixin {
     @Shadow @Final private MinecraftClient client;
 
     @ModifyExpressionValue(
-        method = "getReachDistance",
+        method = "getBlockInteractionRange",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getReachDistance(Z)F"))
     private float getActualReachDistance(final float reachDistance) {
         if (this.client.player != null) {

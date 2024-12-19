@@ -1,8 +1,5 @@
-import org.gradle.util.GradleVersion
-import java.time.Instant
-
 plugins {
-    id "fabric-loom" version "1.5-SNAPSHOT"
+    id "fabric-loom" version "1.6-SNAPSHOT"
     id "net.nemerosa.versioning" version "3.0.0"
     id "maven-publish"
     id "signing"
@@ -15,6 +12,37 @@ final isReleaseVersion = !version.endsWith("-SNAPSHOT")
 
 java {
     withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation("com.google.code.findbugs:jsr305:$jsr305_version") {
+        transitive = false
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
 }
 
 loom {
@@ -31,57 +59,6 @@ loom {
             property "mixin.hotSwap", "true"
         }
     }
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:$minecraft_version"
-    mappings "net.fabricmc:yarn:$yarn_mappings"
-    modImplementation "net.fabricmc:fabric-loader:$loader_version"
-    modImplementation fabricApi.module("fabric-resource-loader-v0", fabric_version)
-    modImplementation fabricApi.module("fabric-registry-sync-v0", fabric_version)
-    implementation("com.google.code.findbugs:jsr305:$jsr305_version") {
-        transitive = false
-    }
-}
-
-compileJava {
-    options.with {
-        it.release.set(17)
-        it.fork = true
-        it.deprecation = true
-        it.encoding = "UTF-8"
-        it.compilerArgs = ["-Xlint:all", "-parameters"]
-    }
-}
-
-processResources {
-    inputs.property "version", project.version
-    filesMatching("/fabric.mod.json") {
-        expand "version": project.version
-    }
-}
-
-jar {
-    from "/LICENSE"
-    manifest.attributes([
-      "Build-Timestamp": Instant.now(),
-      "Build-Revision": versioning.info.commit,
-      "Build-Jvm": "" +
-        "${System.getProperty("java.version")} (" +
-        "${System.getProperty("java.vm.vendor")} " +
-        "${System.getProperty("java.vm.version")})",
-      "Built-By": GradleVersion.current(),
-
-      "Implementation-Title": project.name,
-      "Implementation-Version": project.version,
-      "Implementation-Vendor": project.group,
-
-      "Specification-Title": "FabricMod",
-      "Specification-Version": "1.0.0",
-      "Specification-Vendor": "dev.sapphic",
-
-      "Sealed": "true"
-    ])
 }
 
 publishing {

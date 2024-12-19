@@ -1,6 +1,5 @@
 {
-  "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_21",
   "required": true,
   "package": "com.jamieswhiteshirt.reachentityattributes.mixin",
   "client": [
